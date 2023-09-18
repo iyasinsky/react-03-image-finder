@@ -1,29 +1,41 @@
 import { Component } from 'react';
-// import axios from 'axios';
 import { GlobalStyle } from 'helpers/GlobalStyle';
 import { Searchbar } from './Searchbar/Searchbar';
 import { Wrapper } from './App.styled';
-// import test from '../helpers/test';
 import { ImageGallery } from './ImageGallery/ImageGallery';
 import { Button } from './Button/Button';
+import { getImages } from './services/PixabayApi';
 
 export class App extends Component {
   state = {
     query: '',
-    page: 1,
     photos: [],
+    page: 1,
+    isLoading: false,
+    error: null,
   };
 
-  componentDidUpdate(_, prevState) {
-    if (
-      prevState.query !== this.state.query ||
-      prevState.page !== this.state.page
-    ) {
-      fetch(
-        `https://pixabay.com/api/?q=${this.state.query}&page=${this.state.page}&key=39495735-1e28386ea245dafd6542f3284&image_type=photo&orientation=horizontal&per_page=12`
-      )
-        .then(res => res.json())
-        .then(console.log);
+  async componentDidUpdate(_, prevState) {
+    const { query: prevQuery, page: prevPage } = prevState;
+    const { query: nextQuery, page: nextPage } = this.state;
+
+    if (prevQuery !== nextQuery) {
+      // this.setState({ isLoading: true, error: null });
+      this.setState({ page: 1 });
+
+      const { hits } = await getImages(this.state);
+      console.log('prevQuery !== nextQuery:', hits);
+
+      this.setState({ photos: hits });
+    }
+
+    if (prevPage !== nextPage) {
+      const { hits } = await getImages(this.state);
+      console.log('prevPage !== nextPage:', hits);
+
+      this.setState(({ photos }) => ({
+        photos: [...photos, ...hits],
+      }));
     }
   }
 
@@ -37,9 +49,9 @@ export class App extends Component {
     }));
   };
 
-  resetPage = () => {
-    this.setState({ page: 1 });
-  };
+  // resetPage = () => {
+  //   this.setState({ page: 1 });
+  // };
 
   render() {
     return (
@@ -52,3 +64,23 @@ export class App extends Component {
     );
   }
 }
+
+// async componentDidUpdate(_, prevState) {
+//   if (
+//     prevState.query !== this.state.query ||
+//     prevState.page !== this.state.page
+//   ) {
+//     try {
+//       this.setState({ isLoading: true, error: null });
+//       const { hits } = await getImages(this.state);
+//       console.log(hits);
+//       this.setState(prevState => ({
+//         photos: [...prevState.photos, ...hits],
+//       }));
+//     } catch (error) {
+//       console.log(error);
+//     } finally {
+//       this.setState({ isLoading: false });
+//     }
+//   }
+// }
