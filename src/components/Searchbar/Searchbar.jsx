@@ -1,17 +1,12 @@
+import { BsSearch } from 'react-icons/bs';
 import PropTypes from 'prop-types';
 import { Formik, Form, Field } from 'formik';
-// import { object, string } from 'yup';
 import { Header } from './Searchbar.styled';
-
-// const schema = object().shape({
-//   searchQuery: string().required('Required field!'),
-// });
 
 export const Searchbar = ({ onFormSubmit }) => (
   <Header>
     <Formik
       initialValues={{ query: '' }}
-      // validationSchema={schema}
       onSubmit={(values, actions) => {
         onFormSubmit(values);
         actions.resetForm();
@@ -19,7 +14,7 @@ export const Searchbar = ({ onFormSubmit }) => (
     >
       <Form>
         <button type="submit">
-          <span></span>
+          <BsSearch size="24" />
         </button>
 
         <Field
@@ -29,7 +24,6 @@ export const Searchbar = ({ onFormSubmit }) => (
           autoFocus
           placeholder="Search images and photos"
         />
-        {/* <ErrorMessage name="query" component="p" /> */}
       </Form>
     </Formik>
   </Header>

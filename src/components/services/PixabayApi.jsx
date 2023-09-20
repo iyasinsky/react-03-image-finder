@@ -1,4 +1,5 @@
 import axios from 'axios';
+import PropTypes from 'prop-types';
 
 export const getImages = async ({ query, page }) => {
   const response = await axios({
@@ -15,4 +16,9 @@ export const getImages = async ({ query, page }) => {
     },
   });
   return response.data;
+};
+
+getImages.propTypes = {
+  query: PropTypes.string.isRequired,
+  page: PropTypes.number.isRequired,
 };
