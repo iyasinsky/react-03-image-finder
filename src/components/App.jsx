@@ -5,82 +5,61 @@ import { Wrapper } from './App.styled';
 import { ImageGallery } from './ImageGallery/ImageGallery';
 import { Button } from './Button/Button';
 import { getImages } from './services/PixabayApi';
+import { Loader } from './Loader/Loader';
 
 export class App extends Component {
   state = {
     query: '',
     photos: [],
     page: 1,
-    isLoading: false,
-    error: null,
+    error: false,
+    loader: false,
   };
 
-  async componentDidUpdate(_, prevState) {
-    const { query: prevQuery, page: prevPage } = prevState;
-    const { query: nextQuery, page: nextPage } = this.state;
+  async componentDidUpdate() {
+    try {
+      if (this.state.loader) {
+        const { hits } = await getImages(this.state);
 
-    if (prevQuery !== nextQuery) {
-      // this.setState({ isLoading: true, error: null });
-      this.setState({ page: 1 });
-
-      const { hits } = await getImages(this.state);
-      console.log('prevQuery !== nextQuery:', hits);
-
-      this.setState({ photos: hits });
-    }
-
-    if (prevPage !== nextPage) {
-      const { hits } = await getImages(this.state);
-      console.log('prevPage !== nextPage:', hits);
-
-      this.setState(({ photos }) => ({
-        photos: [...photos, ...hits],
-      }));
+        if (hits.length) {
+          this.setState(({ photos }) => ({
+            photos: [...photos, ...hits],
+            loader: false,
+          }));
+        }
+      }
+    } catch (error) {
+      this.setState({ error: true });
     }
   }
 
   onFormSubmit = ({ query }) => {
-    this.setState({ query });
+    this.setState({
+      query,
+      page: 1,
+      photos: [],
+      loader: true,
+    });
   };
 
-  incrementPage = () => {
-    this.setState(prevState => ({
-      page: prevState.page + 1,
+  loadMore = () => {
+    this.setState(({ page }) => ({
+      page: page + 1,
+      loader: true,
     }));
   };
 
-  // resetPage = () => {
-  //   this.setState({ page: 1 });
-  // };
-
   render() {
+    const { photos, loader, error } = this.state;
+    const isShow = photos.length && !error;
     return (
       <Wrapper>
         <GlobalStyle />
         <Searchbar onFormSubmit={this.onFormSubmit} />
-        <ImageGallery photos={this.state.photos} />
-        <Button onClick={this.incrementPage} />
+        <ImageGallery photos={photos} />
+        {loader && <Loader />}
+        {isShow && <Button onClick={this.loadMore} />}
       </Wrapper>
     );
   }
 }
-
-// async componentDidUpdate(_, prevState) {
-//   if (
-//     prevState.query !== this.state.query ||
-//     prevState.page !== this.state.page
-//   ) {
-//     try {
-//       this.setState({ isLoading: true, error: null });
-//       const { hits } = await getImages(this.state);
-//       console.log(hits);
-//       this.setState(prevState => ({
-//         photos: [...prevState.photos, ...hits],
-//       }));
-//     } catch (error) {
-//       console.log(error);
-//     } finally {
-//       this.setState({ isLoading: false });
-//     }
-//   }
-// }
